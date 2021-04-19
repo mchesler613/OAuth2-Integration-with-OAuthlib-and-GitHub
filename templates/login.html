@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock title %}
+
+{% block content %}
+<div class="w3-container w3-padding w3-margin">
+<p>
+{% comment %}
+{% if user.is_authenticated and user.person %}
+Login via <a href="/auth/ping/">GitHub</a>
+{% endcomment %}
+Login via <a href="{% url 'github:ping' %}">GitHub</a>
+</p>
+</div>
+{% endblock content %}

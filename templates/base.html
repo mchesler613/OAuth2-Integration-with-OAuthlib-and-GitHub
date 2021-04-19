@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>
+      {% block title %}
+        {{ title }}
+      {% endblock title %}
+    </title>
+  </head>
+  <body>
+    <!-- Body -->
+    <div class="w3-container" style="margin-left:160px;">
+    {% if messages %}
+      <ul class="w3-ul w3-pink">
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+    {% block content %}{% endblock content %}
+    </div>
+    <!-- Footer -->
+    <div class="w3-container w3-gray w3-center" style="margin-left:160px;">
+      <strong>Designed By</strong>
+      <p>&copy; <a href="http://merilynchesler.medium.com">Merilyn Chesler</a>, All Rights Reserved.</p>
+    </div>
+  </div>
+  </body>
+</html>
