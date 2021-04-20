@@ -1,32 +1,114 @@
-{% load static %}
 <!DOCTYPE html>
 <html>
+  {% load static %}
   <head>
+    <link rel="icon" href="{% static 'img/favicon.ico' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-    <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+    <!--
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" type="text/css">
+    -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-black.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sofia">    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+      body, h1, h2, h3, h4, h5, h6  {
+        font-family: Roboto, sans-serif;
+      }
+      .w3-sofia {
+        font-family: Sofia, cursive;
+      }
+    </style>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css"> 
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+   
+    <script 
+      src="https://code.jquery.com/jquery-1.12.4.min.js" 
+      integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+      crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+      integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+      crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
+    <script src="{% static 'js/iplan.tabs.js' %}"></script> 
+    <script src="{% static 'js/iplan.init.js' %}"></script> 
+    <script src="https://kit.fontawesome.com/17c2082d4f.js" crossorigin="anonymous"></script>
     <title>
       {% block title %}
         {{ title }}
       {% endblock title %}
     </title>
+
   </head>
   <body>
-    <!-- Body -->
-    <div class="w3-container" style="margin-left:160px;">
-    {% if messages %}
-      <ul class="w3-ul w3-pink">
-      {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-    {% block content %}{% endblock content %}
+ 
+  <!-- Top Navigation -->
+  <div class="w3-top">
+    <div class="w3-bar w3-theme-light w3-border">
+      <!--
+      <a href="javascript:void(0)" onclick="w3_open()" title="Click to open Menu" class="w3-bar-item w3-button w3-theme w3-medium"><i class="fa fa-bars"></i></a>
+      -->
+      <div class="w3-dropdown-hover w3-hide-medium w3-hide-large">
+        <button class="w3-button w3-theme"><i class="fa fa-bars"></i></button>
+        <div class="w3-dropdown-content w3-bar-block">
+          <a href="{% url 'planner:people_list' %}" class="w3-bar-item w3-button w3-border-bottom">Directory</a>
+          <a href="{% url 'planner:contact' %}" class="w3-bar-item w3-button w3-border-bottom">Contact Us</a>
+        </div>
+      </div>
+      <a href="{% url 'planner:index' %}" class="w3-bar-item w3-button w3-border-right">Home</a>
+      <a href="{% url 'planner:people_list' %}" class="w3-bar-item w3-button w3-border-right w3-hide-small">Directory</a>
+      <a href="{% url 'planner:contact' %}" class="w3-bar-item w3-button w3-border-right w3-hide-small">Contact Us</a>
+
+      {% if user.is_authenticated %}
+      <a href="{% url 'planner:logout' %}" class="w3-bar-item w3-border-right w3-button">Logout </a>
+      <div class="w3-dropdown-hover">
+        <button class="w3-button w3-pink w3-sofia">Welcome, {{ user.person.name }}!</button>
+          <div class="w3-dropdown-content w3-bar-block">
+            <a class="w3-bar-item w3-button w3-border-bottom" href="{% url 'planner:person_detail' user.person.pk %}">My Profile</a>
+            <a class="w3-bar-item w3-button w3-border-bottom" href="{% url 'planner:task_list' user.person.pk %}">My Tasks</a>
+            <a class="w3-bar-item w3-button w3-border-bottom" href="{% url 'planner:meeting_list' user.person.pk %}">My Meetings</a>
+          </div>
+      </div>
+      {% else %}
+      <a href="{% url 'login' %}" class="w3-bar-item w3-button w3-border-right">Login </a>
+      {% endif %}
     </div>
+  </div>
+  <div class="w3-main">
+    <!-- Header -->
+    <div class="w3-theme" style="margin-top:40px">
+      <div class="w3-card w3-center w3-sofia">
+        <h1 class="w3-sofia">iPlan Demo</h1>
+        <p>Django app for planning tasks and meetings</p>
+      </div>
+    </div>
+    <!-- Body -->
+    <div class="w3-container w3-responsive w3-text-theme">
+      {% if messages %}
+      <div class="w3-panel w3-pink w3-display-container">
+        <ul class="w3-ul">
+        {% for message in messages %}
+          <span onclick="this.parentElement.style.display='none'" class="w3-button w3-medium w3-display-topright">&times;</span>
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      <!--
+      <div id="debug">
+
+      </div>
+      -->
+      {% block content %}
+      {% endblock content %}
+
+    </div>
+
     <!-- Footer -->
-    <div class="w3-container w3-gray w3-center" style="margin-left:160px;">
-      <strong>Designed By</strong>
+    <div class="w3-theme w3-card w3-center w3-sofia">
+      <h1 class="w3-sofia">Designed By</h1>
       <p>&copy; <a href="http://merilynchesler.medium.com">Merilyn Chesler</a>, All Rights Reserved.</p>
     </div>
   </div>
