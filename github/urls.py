@@ -1,16 +1,14 @@
 from django.urls import path
 from . import views
-#from django_github_oauth_views.views import GithubOAuthLoginView
-from github.views import WelcomeView
+from github.views import WelcomeView, PageView, HomeView, CallbackView
 
 app_name = 'github'
 
-#path('callback/', GithubOAuthCallbackView.as_view())
-#path('login', GithubOAuthLoginView.as_view()),
 urlpatterns = [
+    path('', HomeView.as_view(), name='home'),
     path('welcome/', WelcomeView.as_view(), name='welcome'),
-    path('callback/', views.callback, name='callback'),
-    path('ping/', views.ping, name='ping'),
-    path('login/', views.login_request, name='login'),
+    path('callback/', CallbackView.as_view(), name='callback'),
+    path('login/', views.github_login, name='login'),
     path('logout/', views.logout_request, name='logout'),
+    path('page/', PageView.as_view(), name='page'),
 ]

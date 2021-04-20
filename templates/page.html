@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock title %}
+
+{% block content %}
+<div class="w3-container w3-padding w3-margin w3-center">
+{% if user.is_authenticated %}
+<h1>
+You can now see this secret message!
+</h1>
+<img src="https://content.codecademy.com/articles/github-pages-via-web-app/happy-ice-cream.gif" width="50%">
+{% else %}
+<p>
+You need to login to see the secret message.
+</p>
+<a href="{% url 'github:login' %}" class="w3-button w3-theme w3-round">
+<i class="fa fa-github fa-fw"></i>
+<span>Login with GitHub</span>
+</a>
+{% endif %}
+</div>
+{% endblock content %}

@@ -2,22 +2,13 @@
 {% block title %}{{ title }}{% endblock title %}
 
 {% block content %}
-<div class="w3-container w3-padding w3-margin">
-<p>
-{% comment %}
-{% endcomment %}
-{% if user.is_authenticated %}
-<h1>
-You can now see this secret message!
-</h1>
-{% else %}
-You should not see this secret message!
-{% endif %}
-Welcome, <strong>{{ profile.name }}, {{ profile.login }}, {{ profile.email }}</strong>!
-</p>
-<img src="{{ profile.avatar_url }}" width="50%">
-<p>
-<a href="{% url 'github:logout' %}">Logout</a>
-</p>
+<div class="w3-container w3-padding w3-margin w3-center">
+  <p>
+    Welcome, <strong>{{ profile.name }}, {{ profile.login }}, {{ profile.email }}</strong>!
+  </p>
+  <img src="{{ profile.avatar_url }}" width="50%">
+  <p>
+    <a href="{% url 'github:logout' %}" class="w3-bar-item w3-border-right w3-button w3-theme w3-round">Logout </a>
+  </p>
 </div>
 {% endblock content %}

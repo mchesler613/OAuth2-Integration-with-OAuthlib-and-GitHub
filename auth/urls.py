@@ -16,7 +16,6 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    #path('github-oauth/', include('django_github_oauth.urls')),
     path('', include('github.urls')),
     path('admin/', admin.site.urls),
 ]

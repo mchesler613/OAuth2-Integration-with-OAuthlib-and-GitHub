@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock title %}
+
+{% block content %}
+<div class="w3-container w3-padding w3-margin">
+<p>
+Welcome to my demo of authenticating a user via third-party login such as GitHub. Click on the button to
+{% if user.is_authenticated %}
+logout from this site.
+{% else %}
+login to this site via GitHub.
+{% endif %}
+</p>
+<p class="w3-center">
+{% if user.is_authenticated %}
+<a href="{% url 'github:logout' %}" class="w3-button w3-theme w3-round">
+Logout
+</a>
+{% else %}
+<a href="{% url 'github:login' %}" class="w3-button w3-theme w3-round">
+<i class="fa fa-github fa-fw"></i>
+<span>Login with GitHub</span>
+</a>
+{% endif %}
+</p>
+</div>
+{% endblock content %}

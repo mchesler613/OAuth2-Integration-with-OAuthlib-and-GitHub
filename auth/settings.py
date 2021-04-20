@@ -11,16 +11,20 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import dotenv_values    # new
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Settings for environment varibles
+ENV_FILE=str(Path(BASE_DIR)) + '/auth.env'
+myvars = dotenv_values(ENV_FILE)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'goc_95w)hrynw61y(o^-r!rk#=qb($+$ll42+&r$3m%tngpge4'
+SECRET_KEY = myvars['SECRET_KEY']
 
 # SSL
 #SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -29,7 +33,7 @@ SECURE_SSL_REDIRECT = True
 #CSRF_COOKIE_SECURE = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['aws.djangodemo.com']
 
@@ -37,8 +41,7 @@ ALLOWED_HOSTS = ['aws.djangodemo.com']
 # Application definition
 
 INSTALLED_APPS = [
-    #'django_github_oauth',
-    'github.apps.GithubConfig',
+    'github.apps.GithubConfig',   # new
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -127,19 +130,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# OAuth Settings
-GITHUB_OAUTH_CLIENT_ID = '114b2fd1c5f0e2d39848'
-GITHUB_OAUTH_SECRET = '195a3f154f8986eae3661f9c3186909f44efa683'
-GITHUB_OAUTH_CALLBACK_URL = 'https://aws.djangodemo.com/auth/callback'
-
+# OAuth Settings (new)
+GITHUB_OAUTH_CLIENT_ID = myvars['GITHUB_OAUTH_CLIENT_ID']
+GITHUB_OAUTH_SECRET = myvars['GITHUB_OAUTH_SECRET']
+GITHUB_OAUTH_CALLBACK_URL = myvars['GITHUB_OAUTH_CALLBACK_URL']
 GITHUB_OAUTH_SCOPES = []
 
 
 
-# optional - User model, fields: login, token
-
-#AUTH_USER_MODEL = 'django_github_oauth.User'
-#AUTHENTICATION_BACKENDS = ('django_passwordless_auth.backend.PasswordlessAuthBackend',)
-#LOGIN_REDIRECT_URL = '/'
-#LOGOUT_REDIRECT_URL = '/'
-LOGIN_URL = '/login'
+#LOGIN_URL = '/login'

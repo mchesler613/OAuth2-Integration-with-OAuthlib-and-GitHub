@@ -1,3 +1,15 @@
+"""
+-------------------------------------------------------------
+Author: Merilyn Chesler
+Date: 4/20/2021
+File: views.py
+Description: This file contains the views to login to GitHub
+and authenticate and return to the origin site using the Django
+Requests-OAuthlib extension and other pages to test the validity
+of the authentication.
+https://requests-oauthlib.readthedocs.io/en/latest/examples/github.html
+-------------------------------------------------------------
+"""
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
@@ -7,39 +19,24 @@ from pprint import *
 from django.contrib.auth.models import User
 from requests_oauthlib import OAuth2Session
 from django.views.generic.base import TemplateView
-from django.contrib.auth import logout
+from django.contrib.auth import login, logout
 from django.contrib import messages
 import secrets
 from requests.models import PreparedRequest
-
-
-
-client_id = '114b2fd1c5f0e2d39848'
-client_secret = '195a3f154f8986eae3661f9c3186909f44efa683'
+from auth import settings
+client_id = settings.GITHUB_OAUTH_CLIENT_ID    
+client_secret = settings.GITHUB_OAUTH_SECRET
 github = OAuth2Session(client_id)
 authorization_base_url = 'https://github.com/login/oauth/authorize'
 token_url = 'https://github.com/login/oauth/access_token'
 state = ''
-redirect_uri = 'https://aws.djangodemo.com/auth/callback'
+redirect_uri = settings.GITHUB_OAUTH_CALLBACK_URL
+
 
 # Create your views here.
-def ping(request):
-    '''
-    x = requests.get(url,
-    params = {
-      "client_id": client_id,
-      "state": client_state,   # randomized string
-      "redirect_uri": 'http://aws.djangodemo.com/auth/callback/', 
-      "scope": 'user',
-      "login": 'mchesler613',
-      "allow_signup": 'false',
-    })
+def github_login(request):
 
-    context = {'x': x, 'headers':x.headers, 'content': x.content}
-    return HttpResponse(x.content)
-'''
     #authorization_url, state = github.authorization_url(authorization_base_url)
-    #assert False
     # https://github.com/login/oauth/authorize?response_type=code&client_id=<client_id>&state=<state>
     params = {
       'response_type': 'code',
@@ -52,68 +49,59 @@ def ping(request):
     return HttpResponseRedirect(req.url)
 
 
-def callback(request):
-  '''
-  data = request.GET
-  code = data['code']
-  state = data['state']
-  '''
-  
-  # returns the URL that calls this function, e.g. https://aws.djangodemo.com/auth/callback/?code=<code>&state=<state>
-  response = request.build_absolute_uri()
-  #print("response = %s, code=%s, state=%s" %(response, code, state))
+class CallbackView(TemplateView):
+  template_name = 'welcome.html'
 
-  # fetch the token from GitHub's API at token_url
-  github.fetch_token(token_url, client_secret=client_secret,authorization_response=response)
-  '''
-  x = requests.post(token_url,
-    data = {
-      "client_id": client_id,
-      "client_secret": client_secret,
-      "code": code,   
-      "redirect_uri": response,
-      "state": state,   # randomized string
-    })
+  def get_context_data(self, **kwargs):
+    data = self.request.GET
+    code = data['code']
+    state = data['state']
 
-  print('Callback x.status_code', x.status_code)
-  print('Callback x.reason', x.reason)
-  print('Callback x.headers', x.headers['Content-Type'])
-  print('Callback x.text', x.text)
-  #print('Callback x.json()', x.json())
-  '''
+    # returns the URL that calls this function, e.g. https://aws.djangodemo.com/auth/callback/?code=<code>&state=<state>
+    response = self.request.build_absolute_uri()
+    print("response = %s, code=%s, state=%s" %(response, code, state))
 
-  # returns a 'requests.get(url)' object
-  get_result = github.get('https://api.github.com/user')
+    # fetch the token from GitHub's API at token_url
+    github.fetch_token(token_url, client_secret=client_secret,authorization_response=response)
 
-  json_dict  = get_result.json()
+    # returns a 'requests.get(url)' object
+    get_result = github.get('https://api.github.com/user')
 
-  dict = {
-    'login': json_dict['login'],
-    'name': json_dict['name'],
-    'bio': json_dict['bio'],
-    'blog': json_dict['blog'],
-    'email': json_dict['email'],
-    'avatar_url': json_dict['avatar_url'],
-  }
+    json_dict  = get_result.json()
 
-  context = {'profile': json_dict}
-  #assert False
-  #return HttpResponse("<pre>%s</pre>" %pformat(dict))
-  #return HttpResponseRedirect(reverse('github:welcome', kwargs={'profile': json_string}))
+    dict = {
+      'login': json_dict['login'],
+      'name': json_dict['name'],
+      'bio': json_dict['bio'],
+      'blog': json_dict['blog'],
+      'email': json_dict['email'],
+      'avatar_url': json_dict['avatar_url'],
+    }
 
-  # create a User for this profile
-  try:
+    context = {'profile': json_dict}
+
+    # create a User for this profile
+    try:
       user = User.objects.get(username=json_dict['login'])
-      messages.add_message(request, messages.SUCCESS, "User %s already exists, Authenticated? %s" %(user.username, user.is_authenticated))
+      messages.add_message(self.request, messages.DEBUG, "User %s already exists, Authenticated? %s" %(user.username, user.is_authenticated))
       print("User %s already exists, Authenticated %s" %(user.username, user.is_authenticated))
       context['user'] = user
-  except:
+
+      # remember to log the user into the system
+      login(self.request,user)
+
+    except:
+      # create a Django User for this login
       user = User.objects.create_user(json_dict['login'], json_dict['email'])
-      messages.add_message(request, messages.SUCCESS, "User %s is created, Authenticated %s? %s" %(user.username, user.is_authenticated))
+      messages.add_message(self.request, messages.DEBUG, "User %s is created, Authenticated %s? %s" %(user.username, user.is_authenticated))
       print("User %s is created, Authenticated %s" %(user.username, user.is_authenticated))
       context['user'] = user
 
-  return render(request, 'welcome.html', context)
+      # remember to log the user into the system
+      login(self.request,user)
+
+    return context #render(request, 'welcome.html', context)
+
 
 # Class View
 class WelcomeView(TemplateView):
@@ -125,17 +113,32 @@ class WelcomeView(TemplateView):
       # deserialize JSON
       profile = json.loads(self.kwargs['profile'])
       context['profile'] = profile
+      user = json.loads(self.kwargs['user'])
+      context['user'] = user
 
-
-      assert False
+      #assert False
       return context
 
-def login_request(request):
-  # Check if user exists
-  # Otherwise create a new user
-  return render(request, 'login.html')
+
+class PageView(TemplateView):
+  template_name = 'page.html'
+
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+      context['user'] = self.request.user
+
+      #assert False
+      return context
+
+
+class HomeView(TemplateView):
+  template_name = 'home.html'
+
 
 def logout_request(request):
     logout(request)
+    user = request.user
+    authenticated = user.is_authenticated
+    #print("logout_request: User %s Authenticated? %s", %(user.username, authenticated))
     messages.add_message(request, messages.SUCCESS, "You are successfully logged out")
-    return render(request, 'login.html')
+    return render(request, 'home.html')
