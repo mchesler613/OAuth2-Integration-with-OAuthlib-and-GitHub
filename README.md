@@ -30,5 +30,6 @@ Other requirements include:
   - fetch a token from GitHub's [token URL](https://github.com/login/oauth/access_token) passing `client secret` and `code` as arguments
   - retrieve the authorized user profile data from GitHub as `JSON` data
   - create a Django `User` account or reuse an existing authorized `User` account
+  - login to Django with `User` account
   - proceed with Django app logic based on `User` privileges
 
