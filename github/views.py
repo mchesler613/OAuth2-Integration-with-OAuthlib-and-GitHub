@@ -34,57 +34,76 @@ redirect_uri = settings.GITHUB_OAUTH_CALLBACK_URL
 
 
 # Create your views here.
+# Contact GitHub to authenticate
 def github_login(request):
 
-    #authorization_url, state = github.authorization_url(authorization_base_url)
+    # GitHub Authorize URL with Params
     # https://github.com/login/oauth/authorize?response_type=code&client_id=<client_id>&state=<state>
+
     params = {
       'response_type': 'code',
       'client_id': client_id,
       'state': secrets.token_urlsafe(16),
     }
+
     req = PreparedRequest()
     req.prepare_url(authorization_base_url, params)
+
     print('authorization_url', req.url)
+
     return HttpResponseRedirect(req.url)
 
 
+# Client Callback from GitHub
 class CallbackView(TemplateView):
+  # Display view in this template
   template_name = 'welcome.html'
 
   def get_context_data(self, **kwargs):
+
+    # Retrieve these data for debugging purposes only
     data = self.request.GET
     code = data['code']
     state = data['state']
 
-    # returns the URL that calls this function, e.g. https://aws.djangodemo.com/auth/callback/?code=<code>&state=<state>
+    # GitHub invokes a URL that calls us,
+    # e.g. https://aws.djangodemo.com/auth/callback/?code=<code>&state=<state>
+
+    # Build this URL to send back to GitHub
     response = self.request.build_absolute_uri()
+
     print("response = %s, code=%s, state=%s" %(response, code, state))
 
-    # fetch the token from GitHub's API at token_url
+    # fetch the access token from GitHub's API at token_url
     github.fetch_token(token_url, client_secret=client_secret,authorization_response=response)
 
-    # returns a 'requests.get(url)' object
+    # Retrieve GitHub profile data
     get_result = github.get('https://api.github.com/user')
 
+    # Store profile data in JSON
     json_dict  = get_result.json()
 
-    dict = {
-      'login': json_dict['login'],
-      'name': json_dict['name'],
-      'bio': json_dict['bio'],
-      'blog': json_dict['blog'],
-      'email': json_dict['email'],
-      'avatar_url': json_dict['avatar_url'],
-    }
+    '''
+    Fields that are of interest:
+      'login' => json_dict['login'],
+      'name' => json_dict['name'],
+      'bio' => json_dict['bio'],
+      'blog' => json_dict['blog'],
+      'email' => json_dict['email'],
+      'avatar_url' => json_dict['avatar_url'],
+    '''
 
+    # save the user profile in a context
     context = {'profile': json_dict}
 
-    # create a User for this profile
+    # retrieve or create a Django User for this profile
     try:
       user = User.objects.get(username=json_dict['login'])
+
       messages.add_message(self.request, messages.DEBUG, "User %s already exists, Authenticated? %s" %(user.username, user.is_authenticated))
+
       print("User %s already exists, Authenticated %s" %(user.username, user.is_authenticated))
+
       context['user'] = user
 
       # remember to log the user into the system
@@ -93,31 +112,18 @@ class CallbackView(TemplateView):
     except:
       # create a Django User for this login
       user = User.objects.create_user(json_dict['login'], json_dict['email'])
+
       messages.add_message(self.request, messages.DEBUG, "User %s is created, Authenticated %s? %s" %(user.username, user.is_authenticated))
+
       print("User %s is created, Authenticated %s" %(user.username, user.is_authenticated))
+
       context['user'] = user
 
       # remember to log the user into the system
       login(self.request,user)
 
-    return context #render(request, 'welcome.html', context)
-
-
-# Class View
-class WelcomeView(TemplateView):
-  template_name = 'welcome.html'
-
-  def get_context_data(self, **kwargs):
-      context = super().get_context_data(**kwargs)
-
-      # deserialize JSON
-      profile = json.loads(self.kwargs['profile'])
-      context['profile'] = profile
-      user = json.loads(self.kwargs['user'])
-      context['user'] = user
-
-      #assert False
-      return context
+    # Will display context in welcome.html
+    return context
 
 
 class PageView(TemplateView):
@@ -127,7 +133,6 @@ class PageView(TemplateView):
       context = super().get_context_data(**kwargs)
       context['user'] = self.request.user
 
-      #assert False
       return context
 
 
@@ -137,8 +142,5 @@ class HomeView(TemplateView):
 
 def logout_request(request):
     logout(request)
-    user = request.user
-    authenticated = user.is_authenticated
-    #print("logout_request: User %s Authenticated? %s", %(user.username, authenticated))
     messages.add_message(request, messages.SUCCESS, "You are successfully logged out")
     return render(request, 'home.html')
