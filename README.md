@@ -33,3 +33,4 @@ Other requirements include:
   - login to Django with `User` account
   - proceed with Django app logic based on `User` privileges
 
+To learn more about GitHub's OAuth2 flow, refer to this [doc](https://docs.github.com/en/developers/apps/authorizing-oauth-apps#web-application-flow).
