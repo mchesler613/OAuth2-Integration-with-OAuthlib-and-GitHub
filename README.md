@@ -4,7 +4,7 @@ This is a sample Django app to authenticate with [GitHub](http://github.com) as 
 ## Deployment
 This app is deployed on AWS running SSL [here](https://aws/djangodemo.com/auth). This app contains a secret page whose secret content can only be viewed after authenticating with GitHub.
 
-Before authentication:
+Before authentication, the [secret page](https://aws.djangodemo.com/auth/page/) looks like this:
 
 ![Before Authentication](https://i.postimg.cc/T3Lx89gD/2021-04-21-14-13-13.jpg "Before Authentication")
 
