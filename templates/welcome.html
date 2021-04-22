@@ -3,12 +3,16 @@
 
 {% block content %}
 <div class="w3-container w3-padding w3-margin w3-center">
+{% if user.is_authenticated %}
   <p>
-    Welcome, <strong>{{ profile.name }}, {{ profile.login }}</strong>!
+    Welcome, <strong>{{ request.session.profile.name }}, {{ request.session.profile.login }}</strong>!
   </p>
-  <img src="{{ profile.avatar_url }}" width="50%">
+  <img src="{{ request.session.profile.avatar_url }}" width="50%">
   <p>
     <a href="{% url 'github:logout' %}" class="w3-bar-item w3-border-right w3-button w3-theme w3-round">Logout </a>
   </p>
+{% else %}
+Sorry, there is a problem authenticating you. Please try again.
+{% endif %}
 </div>
 {% endblock content %}
