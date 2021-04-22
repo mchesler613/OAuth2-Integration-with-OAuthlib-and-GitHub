@@ -24,18 +24,12 @@ from django.contrib import messages
 import secrets
 from requests.models import PreparedRequest
 from auth import settings
-client_id = settings.GITHUB_OAUTH_CLIENT_ID    
-client_secret = settings.GITHUB_OAUTH_SECRET
-github = OAuth2Session(client_id)
-authorization_base_url = 'https://github.com/login/oauth/authorize'
-token_url = 'https://github.com/login/oauth/access_token'
-state = ''
-redirect_uri = settings.GITHUB_OAUTH_CALLBACK_URL
 
 
 # Create your views here.
 # Contact GitHub to authenticate
 def github_login(request):
+    client_id = settings.GITHUB_OAUTH_CLIENT_ID    
 
     # GitHub Authorize URL with Params
     # https://github.com/login/oauth/authorize?response_type=code&client_id=<client_id>&state=<state>
@@ -46,6 +40,7 @@ def github_login(request):
       'state': secrets.token_urlsafe(16),
     }
 
+    authorization_base_url = 'https://github.com/login/oauth/authorize'
     req = PreparedRequest()
     req.prepare_url(authorization_base_url, params)
 
@@ -75,6 +70,10 @@ class CallbackView(TemplateView):
     print("response = %s, code=%s, state=%s" %(response, code, state))
 
     # fetch the access token from GitHub's API at token_url
+    token_url = 'https://github.com/login/oauth/access_token'
+    client_id = settings.GITHUB_OAUTH_CLIENT_ID
+    client_secret = settings.GITHUB_OAUTH_SECRET
+    github = OAuth2Session(client_id)
     github.fetch_token(token_url, client_secret=client_secret,authorization_response=response)
 
     # Retrieve GitHub profile data
