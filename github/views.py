@@ -113,7 +113,7 @@ class CallbackView(TemplateView):
       # create a Django User for this login
       user = User.objects.create_user(json_dict['login'], json_dict['email'])
 
-      messages.add_message(self.request, messages.DEBUG, "User %s is created, Authenticated %s? %s" %(user.username, user.is_authenticated))
+      messages.add_message(self.request, messages.DEBUG, "User %s is created, Authenticated %s?" %(user.username, user.is_authenticated))
 
       print("User %s is created, Authenticated %s" %(user.username, user.is_authenticated))
 
