@@ -56,18 +56,12 @@ class CallbackView(TemplateView):
 
   def get_context_data(self, **kwargs):
 
-    # Retrieve these data for debugging purposes only
-    data = self.request.GET
-    code = data['code']
-    state = data['state']
-
-    # GitHub invokes a URL that calls us,
-    # e.g. https://aws.djangodemo.com/auth/callback/?code=<code>&state=<state>
-
-    # Build this URL to send back to GitHub
+    """
+    GitHub invokes a URL that calls us,
+    Build this URL that calls this view
+    e.g. https://aws.djangodemo.com/auth/callback/?code=<code>&state=<state>
+    """
     response = self.request.build_absolute_uri()
-
-    print("response = %s, code=%s, state=%s" %(response, code, state))
 
     # fetch the access token from GitHub's API at token_url
     token_url = 'https://github.com/login/oauth/access_token'
