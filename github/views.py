@@ -30,7 +30,7 @@ def github_login(request):
     client_id = settings.GITHUB_OAUTH_CLIENT_ID    
 
     # GitHub Authorize URL with Params
-    # https://github.com/login/oauth/authorize?response_type=code&client_id=<client_id>&state=<state>
+    # https://github.com/login/oauth/authorize?response_type=code&client_id=<client_id>&state=<state>&scope=<scope>&allow_signup=<allow_signup>
 
     # Store state info in session
     request.session['state'] = secrets.token_urlsafe(16)
@@ -38,7 +38,9 @@ def github_login(request):
     params = {
       'response_type': 'code',
       'client_id': client_id,
-      'state': request.session['state']
+      'state': request.session['state'],
+      'scope': 'read:user',
+      'allow_signup': 'false',
     }
 
     authorization_base_url = 'https://github.com/login/oauth/authorize'
