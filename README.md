@@ -15,7 +15,8 @@ After authentication:
 ## Dependencies
 This app uses the following Python packages
 + [python-dotenv](https://pypi.org/project/python-dotenv/), to store sensitive information
-+ [oauthlib](https://oauthlib.readthedocs.io), to integrate with third-party OAuth2 providers, such as GitHub
++ [oauthlib](https://github.com/oauthlib/oauthlib), to integrate with third-party OAuth2 providers, such as GitHub
++ [requests](https://github.com/psf/requests), to send HTTP GET and POST requests
 
 Other requirements include:
 + a GitHub account to login
