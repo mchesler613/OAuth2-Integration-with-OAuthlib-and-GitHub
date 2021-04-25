@@ -24,11 +24,11 @@ Other requirements include:
 
 # Why I wrote this app?
 + I wanted to understand and learn how to integrate with a third-party OAuth2 provider by writing some code myself, instead of plugging in a third-party Django app
-+ With _requests-oauthlib_, I am able to write a client service that completes the [OAuth2 flow](https://requests-oauthlib.readthedocs.io/en/latest/oauth2_workflow.html#web-application-flow) between the client and provider, which requires these steps: 
++ With _oauthlib_, I am able to write a client service that completes the [OAuth2 flow](https://oauthlib.readthedocs.io/en/latest/oauth2/clients/webapplicationclient.html) between the client and provider, which requires these steps: 
   - request authorization from GitHub at an [authorized GitHub URL](https://github.com/login/oauth/authorize) with `client id` and `state` information and expecting a `code` back
   - receive a `code` back from GitHub with the prior `state` information at the client's [callback URL](http://example.com/callback)
   - fetch a token from GitHub's [token URL](https://github.com/login/oauth/access_token) passing `client secret` and `code` as arguments
-  - retrieve the authorized user profile data from GitHub as `JSON` data
+  - retrieve the authorized user profile data from [GitHub](https://api.github.com/user) as `JSON` data
   - create a Django `User` account or reuse an existing authorized `User` account
   - login to Django with `User` account
   - proceed with Django app logic based on `User` privileges
