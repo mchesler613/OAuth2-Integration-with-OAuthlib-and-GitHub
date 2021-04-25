@@ -17,39 +17,44 @@ from django.urls import reverse
 import requests, json
 from pprint import *
 from django.contrib.auth.models import User
-from requests_oauthlib import OAuth2Session
 from django.views.generic.base import TemplateView
 from django.contrib.auth import login, logout
 from django.contrib import messages
 import secrets
 from requests.models import PreparedRequest
 from auth import settings
+from oauthlib.oauth2 import WebApplicationClient
 
 # Contact GitHub to authenticate
 def github_login(request):
-    client_id = settings.GITHUB_OAUTH_CLIENT_ID    
 
-    # GitHub Authorize URL with Params
-    # https://github.com/login/oauth/authorize?response_type=code&client_id=<client_id>&state=<state>&scope=<scope>&allow_signup=<allow_signup>
+    # Setup a Web Application Client from oauthlib
+    client_id = settings.GITHUB_OAUTH_CLIENT_ID    
+    client = WebApplicationClient(client_id)
+
+    # GitHub Authorize URL
+    authorization_url = 'https://github.com/login/oauth/authorize'
 
     # Store state info in session
     request.session['state'] = secrets.token_urlsafe(16)
 
-    params = {
-      'response_type': 'code',
-      'client_id': client_id,
-      'state': request.session['state'],
-      'scope': 'read:user',
-      'allow_signup': 'false',
-    }
+    """
+    Generate a complete authorization url with parameters
+    https://github.com/login/oauth/authorize?response_type=code&client_id=<client_id>&redirect_uri=https://example.com/callback&scope=read%3Auser&state=<state>&allow_signup=false'
+    """
 
-    authorization_base_url = 'https://github.com/login/oauth/authorize'
-    req = PreparedRequest()
-    req.prepare_url(authorization_base_url, params)
+    url = client.prepare_request_uri(
+      authorization_url, 
+      redirect_uri = settings.GITHUB_OAUTH_CALLBACK_URL,
+      scope = ['read:user'],
+      state = request.session['state'],
+      allow_signup = 'false'
+    )
 
-    print('authorization_url', req.url)
+    print('authorization_url', url)
 
-    return HttpResponseRedirect(req.url)
+    # Redirect to the complete authorization url
+    return HttpResponseRedirect(url)
 
 
 # Client Callback from GitHub
@@ -57,16 +62,16 @@ class CallbackView(TemplateView):
 
   def get(self, request, *args, **kwargs):
 
-    # Retrieve these data from the URL keyword arguments
+    # Retrieve these data from the URL 
     data = self.request.GET
     code = data['code']
     state = data['state']
+    print("code=%s, state=%s" %(code, state))
 
     # For security purposes, verify that the
     # state information is the same as was passed
     # to github_login()
-    print(state, self.request.session['state'])
-    if state != self.request.session['state']:
+    if self.request.session['state'] != state:
       messages.add_message(
         self.request,
         messages.ERROR,
@@ -76,31 +81,49 @@ class CallbackView(TemplateView):
     else:
       del self.request.session['state']
 
-    # GitHub invokes a URL that calls us,
-    # Build the URL that calls this function
-    # e.g. https://aws.djangodemo.com/auth/callback/?code=<code>&state=<state>
-    response = self.request.build_absolute_uri()
-
-    print("response = %s, code=%s, state=%s" %(response, code, state))
 
     # fetch the access token from GitHub's API at token_url
     token_url = 'https://github.com/login/oauth/access_token'
     client_id = settings.GITHUB_OAUTH_CLIENT_ID    
     client_secret = settings.GITHUB_OAUTH_SECRET
-    github = OAuth2Session(client_id)
-    """
-    This will work either way, pass the 'response' or just the 'code'
-    github.fetch_token(token_url, client_secret=client_secret,authorization_response=response)
-    or
-    github.fetch_token(token_url, code=code, client_secret=client_secret)
-    """
-    github.fetch_token(token_url, code=code, client_secret=client_secret)
 
+    # Create a Web Applicantion Client from oauthlib
+    client = WebApplicationClient(client_id)
+
+    # Prepare body for request
+    data = client.prepare_request_body(
+      code = code,
+      redirect_uri = settings.GITHUB_OAUTH_CALLBACK_URL,
+      client_id = client_id,
+      client_secret = client_secret
+    )
+
+    # Post a request at GitHub's token_url
+    # Returns requests.Response object
+    response = requests.post(token_url, data=data)
+
+    """
+    Parse the unicode content of the response object
+    Returns a dictionary stored in client.token
+    {
+      'access_token': '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',
+      'scope': ['read:user'],
+      'token_type': 'bearer'
+    }
+    """
+    client.parse_request_body_response(response.text)
+    
+    # Prepare an Authorization header for GET request using the 'access_token' value
+    # using GitHub's official API format
+    header = {'Authorization': 'token {}'.format(client.token['access_token'])}
+    
     # Retrieve GitHub profile data
-    get_result = github.get('https://api.github.com/user')
+    # Send a GET request
+    # Returns requests.Response object
+    response = requests.get('https://api.github.com/user', headers=header)
 
     # Store profile data in JSON
-    json_dict  = get_result.json()
+    json_dict  = response.json()
 
     '''
     Fields that are of interest:
@@ -108,7 +131,7 @@ class CallbackView(TemplateView):
       'name' => json_dict['name'],
       'bio' => json_dict['bio'],
       'blog' => json_dict['blog'],
-      'email' => json_dict['email'],
+      'email' => json_dict['email'],    # not public data
       'avatar_url' => json_dict['avatar_url'],
     '''
 
