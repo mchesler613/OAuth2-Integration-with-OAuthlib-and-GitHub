@@ -35,3 +35,5 @@ Other requirements include:
   - proceed with Django app logic based on `User` privileges
 
 To learn more about GitHub's OAuth2 flow, refer to this [doc](https://docs.github.com/en/developers/apps/authorizing-oauth-apps#web-application-flow).
+
+I wrote a supporting article for this project [here](https://python.plainenglish.io/integrating-oauth2-in-django-with-github-and-oauthlib-341dd0069c2d?sk=ae9055be50f0a7273e0de9e8ad604085). If you found any bugs, or would like me to improve this article, please don't hesitate to contact me. Thanks.
