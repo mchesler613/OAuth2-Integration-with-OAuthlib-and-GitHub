@@ -2,7 +2,7 @@
 This is a sample Django app to authenticate with [GitHub](http://github.com) as a third-party OAuth2 provider.
 
 ## Deployment
-This app is deployed on AWS running SSL [here](https://aws/djangodemo.com/auth). This app contains a secret page whose secret content can only be viewed after authenticating with GitHub.
+This app is deployed on AWS running SSL [here](https://aws.djangodemo.com/auth). This app contains a secret page whose secret content can only be viewed after authenticating with GitHub.
 
 Before authentication, the [secret page](https://aws.djangodemo.com/auth/page/) looks like this:
 
